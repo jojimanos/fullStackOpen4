@@ -4,7 +4,7 @@
   "description": "exercise for fullstackopen",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --verbose",
     "dev": "nodemon index.js"
   },
   "author": "jojimanos",
@@ -16,6 +16,10 @@
     "mongoose": "^7.4.2"
   },
   "devDependencies": {
+    "jest": "^29.6.2",
     "nodemon": "^3.0.1"
+  },
+  "jest": {
+    "testenvironment": "node"
   }
 }
