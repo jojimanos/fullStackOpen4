@@ -13,7 +13,7 @@ const initialBlogs = [
         author: "George",
         title: "Metaphysics",
         url: "url",
-        likes: 10
+        likes: 10,
 
     },
     {
@@ -27,16 +27,16 @@ const initialBlogs = [
 beforeEach(async () => {
     await Blog.deleteMany({})
     let blogObject = new Blog(initialBlogs[0])
-    await blogObject.save() 
+    await blogObject.save()
     blogObject = new Blog(initialBlogs[1])
     await blogObject.save()
 })
 // 
 test('testing the api connection', async () => {
     await api
-    .get('/api/blogs')
-    .expect(200)
-    .expect('Content-Type', /application\/json/)
+        .get('/api/blogs')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
 })
 
 test('all blogs are returned', async () => {
@@ -65,7 +65,7 @@ test('a valid blog can be added', async () => {
     }
 
     await api.post('/api/blogs')
-    .send(newBlog).expect(201).expect('Content-Type', /application\/json/)
+        .send(newBlog).expect(201).expect('Content-Type', /application\/json/)
 
     const response = await api.get('/api/blogs')
 
@@ -78,7 +78,7 @@ test('a valid blog can be added', async () => {
 test('id expected for all entries', async () => {
     const response = await api.get('/api/blogs')
 
-    const ids = response.body.map(r => r.id) 
+    const ids = response.body.map(r => r.id)
 
     expect(ids).toBeDefined()
 })
@@ -107,9 +107,46 @@ test('status 400 if title or url missing', async () => {
     }
 
     const response = await api.post('/api/blogs').send(newBlog)
-    
+
     expect(response.status).toBe(400)
 
+})
+
+test('blog deleted', async () => {
+    const blogToDelete = {
+        author: "George",
+        title: "Metaphysics",
+        url: "url",
+        likes: 10,
+        id: "idToDelete"
+    }
+
+    await api.delete('/api/blogs', (request, response) => {
+        Blog.findByIdAndRemove(blogToDelete.id).expect(201)
+    })
+
+    const response = await api.get('/api/blogs')
+
+    expect(response.body).not.toContain(blogToDelete)
+})
+
+test('successful update', async () => {
+    const blogToUpdate = {
+        author: "Christina",
+        title: "Acting",
+        url: "url",
+        likes: 45,
+    }
+
+    const response = await api.get('/api/blogs')
+
+    const id = response.body[1].id
+
+    await api.put(`/api/blogs/${id}`).send(blogToUpdate)
+
+    const updatedResponse = await api.get(`/api/blogs/${id}`)
+
+    expect(updatedResponse.body.likes).toEqual(blogToUpdate.likes)
 })
 
 afterAll(async () => {
