@@ -4,6 +4,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const config = require('./utils/config')
 const blogNotesRouter = require('./controlers/blognotes')
+const usersRouter = require('./controlers/users')
 const logger = require('./utils/logger')
 
 const mongoUrl = config.MONGODB_URI
@@ -19,6 +20,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api', blogNotesRouter)
+app.use('/api', usersRouter)
 app.use(logger.errorHandler)
 
 module.exports = app
