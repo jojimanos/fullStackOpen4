@@ -10,7 +10,16 @@ const userSchema = new mongoose.Schema({
     hashpassword: {
         type: String,
         required: true
-    }
+    },
+    blogs: [
+        {
+            _id: String,
+            author: String,
+            title: String,
+            url: String,
+            likes: Number
+        }
+    ]
 })  
 
 userSchema.set('toJSON', {
