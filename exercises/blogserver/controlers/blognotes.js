@@ -1,6 +1,15 @@
 const blogNotesRouter = require('express').Router()
 const Blog = require('../models/blognote')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+
+// const getTokenFrom = request => {
+// const authorization = request.get('authorization')
+// if (authorization && authorization.startsWith('Bearer ')) {
+// return authorization.replace('Bearer ', '')
+// }
+// return null
+// }
 
 blogNotesRouter.get('/blogs', async (request, response, next) => {
 
@@ -21,14 +30,23 @@ blogNotesRouter.get('/blogs/:id', async (request, response, next) => {
 blogNotesRouter.post('/blogs', async (request, response, next) => {
   const body = request.body
 
-  let user
-
-  if (body.userId) {
-    user = await User.findById(body.userId)
-  } else {
-    const users = await User.find({})
-    user = users[0]
+  const decodedToken = jwt.verify(
+    // getTokenFrom(request)
+    request.token
+    , process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
   }
+  const user = await User.findById(decodedToken.id)
+
+  // let user
+  // 
+  // if (body.userId) {
+  // user = await User.findById(body.userId)
+  // } else {
+  // const users = await User.find({})
+  // user = users[0]
+  // }
 
   const newBlog = new Blog({
     title: body.title,
@@ -45,8 +63,8 @@ blogNotesRouter.post('/blogs', async (request, response, next) => {
   const blog = await newBlog.save().catch(error => next(error))
 
   user.blogs = user.blogs.concat({
-    _id: blog._id, 
-    author: blog.author, 
+    _id: blog._id,
+    author: blog.author,
     title: blog.title,
     url: blog.url,
     likes: blog.likes
@@ -57,10 +75,30 @@ blogNotesRouter.post('/blogs', async (request, response, next) => {
 })
 
 blogNotesRouter.delete('/blogs/:id', async (request, response, next) => {
+  const decodedToken = jwt.verify(
+    // getTokenFrom(request)
+    request.token
+    , process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+  console.log(user)
 
-  const blog = await Blog.findByIdAndDelete(request.params.id)
-    .catch(error => next(error))
-  response.json(blog)
+  try {
+    if (user.blogs.find(blog => blog.id === request.params.id)) {
+      
+      const blog = await Blog.findByIdAndDelete(request.params.id)
+      user.blogs = user.blogs.filter(blog => {return blog.id !== request.params.id})
+
+      console.log(user.blogs)
+      await user.save()
+
+      response.json(blog)
+    }
+  } catch (error) {
+    next(error)
+  }
 
 })
 
