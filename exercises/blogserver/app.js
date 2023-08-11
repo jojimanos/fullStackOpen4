@@ -8,6 +8,7 @@ const usersRouter = require('./controlers/users')
 const logger = require('./utils/logger')
 const loginRouter = require('./controlers/login')
 const tokenMiddleware = require('./middleware/tokenMiddleware')
+const userMiddleware = require('./middleware/userMiddleware')
 
 const mongoUrl = config.MONGODB_URI
 
@@ -22,6 +23,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use(tokenMiddleware.getTokenFrom)
+app.use(userMiddleware.findTheUser)
 
 app.use('/api', blogNotesRouter)
 app.use('/api', usersRouter)

@@ -30,14 +30,16 @@ blogNotesRouter.get('/blogs/:id', async (request, response, next) => {
 blogNotesRouter.post('/blogs', async (request, response, next) => {
   const body = request.body
 
-  const decodedToken = jwt.verify(
+  // const decodedToken = jwt.verify(
     // getTokenFrom(request)
-    request.token
-    , process.env.SECRET)
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
+    // request.token
+    // , process.env.SECRET)
+  // if (!decodedToken.id) {
+    // return response.status(401).json({ error: 'token invalid' })
+  // }
+  const decodedToken = request.user
   const user = await User.findById(decodedToken.id)
+
 
   // let user
   // 
@@ -75,10 +77,11 @@ blogNotesRouter.post('/blogs', async (request, response, next) => {
 })
 
 blogNotesRouter.delete('/blogs/:id', async (request, response, next) => {
-  const decodedToken = jwt.verify(
+  // const decodedToken = jwt.verify(
     // getTokenFrom(request)
-    request.token
-    , process.env.SECRET)
+    // request.token
+    // , process.env.SECRET)
+    const decodedToken = request.user
   if (!decodedToken.id) {
     return response.status(401).json({ error: 'token invalid' })
   }

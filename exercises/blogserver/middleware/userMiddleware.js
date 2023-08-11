@@ -5,10 +5,10 @@ const findTheUser = (request, response, next) => {
     if (authorization && authorization.startsWith('Bearer ')) {
         const token = authorization.replace('Bearer ', '')
         const decodedToken = jwt.verify(token, process.env.SECRET)
-        const userName = decodedToken.username
-        request.userName = userName
-        request.token = token
-        console.log(token, request.userName)
+        const user = decodedToken
+        request.user = user
     }
     next()
-} 
+}
+
+module.exports = { findTheUser }
