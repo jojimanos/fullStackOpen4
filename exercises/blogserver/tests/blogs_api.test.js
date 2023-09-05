@@ -1,12 +1,25 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 const api = supertest(app)
 
-//initialize the database
+//initialize the databases
+
+const blogDb = mongoose.createConnection(process.env.TEST_MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+
+const userDb = mongoose.createConnection(process.env.TEST_MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
 
 const Blog = require('../models/blognote')
+const User = require('../models/user')
 
 const initialBlogs = [
     {
@@ -24,14 +37,36 @@ const initialBlogs = [
     }
 ]
 
+const sarumansPass = "Iamsaruman"
+
+const userForToken = {
+    userName: "saruman",
+    name: "theWhite",
+}
+
+const token = jwt.sign(userForToken, process.env.TEST_SECRET)
+
 beforeEach(async () => {
     await Blog.deleteMany({})
     let blogObject = new Blog(initialBlogs[0])
     await blogObject.save()
     blogObject = new Blog(initialBlogs[1])
     await blogObject.save()
+
+    const sarumansHash = await bcrypt.hash(sarumansPass, 10)
+
+    const testUser = {
+        userName: "saruman",
+        name: "theWhite",
+        hashpassword: sarumansHash
+    }
+
+    await User.deleteMany({})
+    let userObject = new User(testUser)
+    await userObject.save()
+
 })
-// 
+
 test('testing the api connection', async () => {
     await api
         .get('/api/blogs')
@@ -57,14 +92,29 @@ test('a specific blog is in the blogs', async () => {
 })
 
 test('a valid blog can be added', async () => {
-    const newBlog = {
-        author: "Rene",
-        title: "Triad",
-        url: "url",
-        likes: 10
-    }
 
-    await api.post('/api/blogs')
+    // const decodedUser = request.user
+    // const user = jwt.verify(token, process.env.TEST_SECRET)
+    const user = await User.findById(decodedUser.id)
+    // request.token = token
+
+
+    await api.post('/api/blogs', (request, response) => {
+        request.token = token
+
+        const newBlog = {
+            author: "Rene",
+            title: "Triad",
+            url: "url",
+            likes: 10,
+            user: {
+                userName: user.userName,
+                name: user.name,
+                id: user.id
+            }
+        }
+
+    })
         .send(newBlog).expect(201).expect('Content-Type', /application\/json/)
 
     const response = await api.get('/api/blogs')
