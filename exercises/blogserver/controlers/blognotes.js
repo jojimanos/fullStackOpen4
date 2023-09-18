@@ -142,32 +142,28 @@ blogNotesRouter.put('/blogs/:id/comments', async (request, response, next) => {
 
   const body = request.body
 
-  const decodedToken = request.user
-  const user = await User.findById(decodedToken.id)
+  // const decodedToken = request.user
+  // const user = await User.findById(decodedToken.id)
 
-  const blogUpdate = {
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes,
-    user: {
-      userName: user.userName,
-      name: user.name,
-      userId: user.id
-    },
-    comments: body.comments.concat({comment: body.comment}) 
-  }
+  const blog = await Blog.findById(body.id)
+  console.log(blog)
 
-  const blog = await Blog.findByIdAndUpdate(request.params.id, blogUpdate, { new: true }).catch(error => next(error))
-
-   user.blogs = user.blogs.concat({
-    _id: blog._id,
-    author: blog.author,
-    title: blog.title,
-    url: blog.url,
-    likes: blog.likes
+  blog.comments = blog.comments.concat({
+    comment: body.comment
   })
-  await user.save()
+
+  await blog.save()
+
+  // const blog = await Blog.findByIdAndUpdate(request.params.id, blogUpdate, { new: true }).catch(error => next(error))
+
+  //  user.blogs = user.blogs.concat({
+    // _id: blog._id,
+    // author: blog.author,
+    // title: blog.title,
+    // url: blog.url,
+    // likes: blog.likes
+  // })
+  // await user.save()
 
   response.status(201).json(blog)
 })
