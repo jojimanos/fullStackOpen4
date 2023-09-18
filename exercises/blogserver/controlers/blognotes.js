@@ -155,9 +155,7 @@ blogNotesRouter.put('/blogs/:id/comments', async (request, response, next) => {
       name: user.name,
       userId: user.id
     },
-    comments: [{
-      comment: body.comment
-    }]
+    comments: body.comments.concat({comment: body.comment}) 
   }
 
   const blog = await Blog.findByIdAndUpdate(request.params.id, blogUpdate, { new: true }).catch(error => next(error))
