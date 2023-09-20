@@ -142,10 +142,7 @@ blogNotesRouter.put('/blogs/:id/comments', async (request, response, next) => {
 
   const body = request.body
 
-  // const decodedToken = request.user
-  // const user = await User.findById(decodedToken.id)
-
-  const blog = await Blog.findById(body.id)
+  const blog = await Blog.findById(body.id).catch(error => next(error))
   console.log(blog)
 
   blog.comments = blog.comments.concat({
@@ -153,17 +150,6 @@ blogNotesRouter.put('/blogs/:id/comments', async (request, response, next) => {
   })
 
   await blog.save()
-
-  // const blog = await Blog.findByIdAndUpdate(request.params.id, blogUpdate, { new: true }).catch(error => next(error))
-
-  //  user.blogs = user.blogs.concat({
-    // _id: blog._id,
-    // author: blog.author,
-    // title: blog.title,
-    // url: blog.url,
-    // likes: blog.likes
-  // })
-  // await user.save()
 
   response.status(201).json(blog)
 })
