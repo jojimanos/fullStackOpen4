@@ -31,11 +31,11 @@ blogNotesRouter.post('/blogs', async (request, response, next) => {
   const body = request.body
 
   // const decodedToken = jwt.verify(
-    // getTokenFrom(request)
-    // request.token
-    // , process.env.SECRET)
+  // getTokenFrom(request)
+  // request.token
+  // , process.env.SECRET)
   // if (!decodedToken.id) {
-    // return response.status(401).json({ error: 'token invalid' })
+  // return response.status(401).json({ error: 'token invalid' })
   // }
   const decodedToken = request.user
   const user = await User.findById(decodedToken.id)
@@ -64,13 +64,18 @@ blogNotesRouter.post('/blogs', async (request, response, next) => {
 
   const blog = await newBlog.save().catch(error => next(error))
 
-  user.blogs = user.blogs.concat({
-    _id: blog._id,
-    author: blog.author,
-    title: blog.title,
-    url: blog.url,
-    likes: blog.likes
-  })
+  let userBlogs = user.blogs.map(b => b.title)
+  console.log(userBlogs)
+
+  if (!userBlogs.includes(body.title)) {
+    user.blogs = user.blogs.concat({
+      _id: blog._id,
+      author: blog.author,
+      title: blog.title,
+      url: blog.url,
+      likes: blog.likes
+    })
+  }
   await user.save()
 
   response.status(201).json(blog)
@@ -78,10 +83,10 @@ blogNotesRouter.post('/blogs', async (request, response, next) => {
 
 blogNotesRouter.delete('/blogs/:id', async (request, response, next) => {
   // const decodedToken = jwt.verify(
-    // getTokenFrom(request)
-    // request.token
-    // , process.env.SECRET)
-    const decodedToken = request.user
+  // getTokenFrom(request)
+  // request.token
+  // , process.env.SECRET)
+  const decodedToken = request.user
   if (!decodedToken.id) {
     return response.status(401).json({ error: 'token invalid' })
   }
@@ -90,9 +95,9 @@ blogNotesRouter.delete('/blogs/:id', async (request, response, next) => {
 
   try {
     if (user.blogs.find(blog => blog.id === request.params.id)) {
-      
+
       const blog = await Blog.findByIdAndDelete(request.params.id)
-      user.blogs = user.blogs.filter(blog => {return blog.id !== request.params.id})
+      user.blogs = user.blogs.filter(blog => { return blog.id !== request.params.id })
 
       console.log(user.blogs)
       await user.save()
@@ -126,13 +131,19 @@ blogNotesRouter.put('/blogs/:id', async (request, response, next) => {
 
   const blog = await Blog.findByIdAndUpdate(request.params.id, blogUpdate, { new: true }).catch(error => next(error))
 
-   user.blogs = user.blogs.concat({
-    _id: blog._id,
-    author: blog.author,
-    title: blog.title,
-    url: blog.url,
-    likes: blog.likes
-  })
+  let userBlogs = user.blogs.map(b => b.title)
+
+  if (userBlogs.includes(body.title)) {
+    return
+  } else {
+    user.blogs = user.blogs.concat({
+      _id: blog._id,
+      author: blog.author,
+      title: blog.title,
+      url: blog.url,
+      likes: blog.likes
+    })
+  }
   await user.save()
 
   response.status(201).json(blog)
