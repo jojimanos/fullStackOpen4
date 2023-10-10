@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const commentSchema = new mongoose.Schema({comment: String})
 
 const blogSchema = new mongoose.Schema({
-  title: {type: String, required: true},
+  title: {type: String, required: true, unique: true},
   author: String,
   url: {type: String, required: true},
   likes: {type: Number, default: 0},
@@ -14,7 +14,7 @@ const blogSchema = new mongoose.Schema({
   },
   comments: {
     type: [commentSchema],
-    default: undefined
+    default: null
   }
 })
 

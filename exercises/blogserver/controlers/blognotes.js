@@ -131,19 +131,16 @@ blogNotesRouter.put('/blogs/:id', async (request, response, next) => {
 
   const blog = await Blog.findByIdAndUpdate(request.params.id, blogUpdate, { new: true }).catch(error => next(error))
 
-  let userBlogs = user.blogs.map(b => b.title)
-
-  if (userBlogs.includes(body.title)) {
-    return
-  } else {
-    user.blogs = user.blogs.concat({
+  const updatedBlogEntryForUser = {
       _id: blog._id,
       author: blog.author,
       title: blog.title,
       url: blog.url,
       likes: blog.likes
-    })
   }
+
+
+    user.blogs = user.blogs.map(b => b.title === blog.title ? updatedBlogEntryForUser : b)
   await user.save()
 
   response.status(201).json(blog)
